@@ -1,0 +1,53 @@
+from fastapi import FastAPI, HTTPException
+import os
+from dotenv import load_dotenv
+import sqlalchemy
+from sqlalchemy import text
+
+# Charger les variables d'environnement depuis le fichier .env
+load_dotenv()
+
+app = FastAPI(title="PostgreSQL Version API")
+
+# PostgreSQL connection parameters from .env
+POSTGRES_HOST = os.getenv("POSTGRES_HOST", "localhost")
+POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")
+POSTGRES_USER = os.getenv("POSTGRES_USER", "postgres")
+POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "postgres")
+POSTGRES_DB = os.getenv("POSTGRES_DB", "postgres")
+
+# Créer l'URL de connexion
+DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
+
+@app.get("/")
+async def root():
+    return {
+        "message": "API is running. Access /version to get PostgreSQL version.",
+        "config": {
+            "postgres_host": POSTGRES_HOST,
+            "postgres_port": POSTGRES_PORT,
+            "postgres_db": POSTGRES_DB,
+            "postgres_user": POSTGRES_USER
+        }
+    }
+
+@app.get("/version")
+async def get_postgres_version():
+    try:
+        # Créer un moteur SQLAlchemy
+        engine = sqlalchemy.create_engine(DATABASE_URL)
+        
+        # Se connecter à la base de données
+        with engine.connect() as connection:
+            # Exécuter une requête pour obtenir la version
+            result = connection.execute(text("SELECT version()"))
+            version = result.scalar()
+        
+        # Retourner la version
+        return {
+            "postgres_version": version, 
+            "connection_status": "successful",
+            "connected_to": f"{POSTGRES_HOST}:{POSTGRES_PORT}"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to connect to PostgreSQL: {str(e)}")

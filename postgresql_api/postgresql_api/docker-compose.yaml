@@ -1,0 +1,26 @@
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres-server
+    ports:
+      - "${POSTGRES_PORT:-5434}:5434"  # Modifié pour utiliser le port 5434
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-postgres}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+    command: -p 5434  # Important: configure PostgreSQL pour écouter sur le port 5434
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  api:
+    build: .
+    container_name: fastapi-app
+    ports:
+      - "${API_PORT:-8000}:8000"
+    depends_on:
+      - postgres
+    env_file:
+      - .env
+
+volumes:
+  postgres-data:

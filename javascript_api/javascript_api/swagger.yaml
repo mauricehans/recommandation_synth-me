@@ -1,0 +1,58 @@
+openapi: 3.0.0
+info:
+  title: PostgreSQL API
+  description: API pour interagir avec PostgreSQL et obtenir la version.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+paths:
+  /:
+    get:
+      summary: "Get API information"
+      responses:
+        '200':
+          description: "API information retrieved successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  config:
+                    type: object
+                    properties:
+                      postgres_host:
+                        type: string
+                      postgres_port:
+                        type: integer
+                      postgres_db:
+                        type: string
+                      postgres_user:
+                        type: string
+  /version:
+    get:
+      summary: "Get PostgreSQL version"
+      responses:
+        '200':
+          description: "PostgreSQL version retrieved successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  postgres_version:
+                    type: string
+                  connection_status:
+                    type: string
+                  connected_to:
+                    type: string
+        '500':
+          description: "Failed to connect to PostgreSQL"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
